@@ -1,17 +1,17 @@
 {
   "last_successful_check": null,
   "last_attempt": {
-    "timestamp": "2026-08-05T05:41:00Z",
+    "timestamp": "2026-08-05T06:20:00Z",
     "status": "failed",
-    "reason": "masterofmalt.com blocked at network/proxy policy level (HTTP 403 on CONNECT tunnel for every request, incl. plain curl). Confirmed via proxy status endpoint: recentRelayFailures show connect_rejected / \"gateway answered 403 to CONNECT (policy denial or upstream failure)\" for www.masterofmalt.com:443 across search pages, brand pages, homepage, and individual product pages. www.thewhiskyexchange.com was blocked identically, suggesting a policy-level block on alcohol-retail domains rather than a Master of Malt-specific bot block. WebSearch (Google index) could surface some product name/URL listings but never price or live stock status, so no reliable Add-to-basket/Notify-me data could be captured this run."
+    "reason": "masterofmalt.com actively blocks Playwright/Chromium automation at the connection level. Homepage, search pages (e.g. /search/?query=Springbank), and direct brand pages (e.g. /whiskies/scotch-whisky/springbank-whisky/) all failed identically with net::ERR_CONNECTION_RESET, tested with a realistic desktop Chrome user-agent, with and without --disable-http2, across 4 separate attempts. This is a DIFFERENT failure mode than the prior run: the outbound proxy itself is no longer rejecting the CONNECT tunnel (recentRelayFailures showed no entries for masterofmalt.com this run), and plain curl requests to the same URLs succeeded at the network level, consistently returning HTTP 429 (rate-limited) rather than being reset. Only the real browser engine (Chromium via Playwright) gets its connection reset, suggesting the site's bot-detection/WAF is specifically fingerprinting and hard-blocking automated browser traffic while still serving (rate-limited) responses to simpler HTTP clients. No further bypass/stealth techniques were attempted, per task instructions to report blockage rather than fabricate data or evade detection."
   },
   "brands": {
-    "Springbank": { "products": [], "note": "not verified this run - site access blocked" },
-    "George T. Stagg": { "products": [], "note": "not verified this run - site access blocked" },
-    "Van Winkle / Pappy Van Winkle": { "products": [], "note": "not verified this run - site access blocked" },
-    "Macallan": { "products": [], "note": "not verified this run - site access blocked" },
-    "Clynelish": { "products": [], "note": "not verified this run - site access blocked" },
-    "Daftmill": { "products": [], "note": "not verified this run - site access blocked" }
+    "Springbank": { "products": [], "note": "not verified this run - Playwright connection reset by site" },
+    "George T. Stagg": { "products": [], "note": "not verified this run - Playwright connection reset by site" },
+    "Van Winkle / Pappy Van Winkle": { "products": [], "note": "not verified this run - Playwright connection reset by site" },
+    "Macallan": { "products": [], "note": "not verified this run - Playwright connection reset by site" },
+    "Clynelish": { "products": [], "note": "not verified this run - Playwright connection reset by site" },
+    "Daftmill": { "products": [], "note": "not verified this run - Playwright connection reset by site" }
   },
-  "site_promotions": { "checked": false, "note": "not verified this run - site access blocked" }
+  "site_promotions": { "checked": false, "note": "not verified this run - Playwright connection reset by site" }
 }
