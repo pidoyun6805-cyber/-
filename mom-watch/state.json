@@ -1,0 +1,17 @@
+{
+  "last_successful_check": null,
+  "last_attempt": {
+    "timestamp": "2026-08-05T05:41:00Z",
+    "status": "failed",
+    "reason": "masterofmalt.com blocked at network/proxy policy level (HTTP 403 on CONNECT tunnel for every request, incl. plain curl). Confirmed via proxy status endpoint: recentRelayFailures show connect_rejected / \"gateway answered 403 to CONNECT (policy denial or upstream failure)\" for www.masterofmalt.com:443 across search pages, brand pages, homepage, and individual product pages. www.thewhiskyexchange.com was blocked identically, suggesting a policy-level block on alcohol-retail domains rather than a Master of Malt-specific bot block. WebSearch (Google index) could surface some product name/URL listings but never price or live stock status, so no reliable Add-to-basket/Notify-me data could be captured this run."
+  },
+  "brands": {
+    "Springbank": { "products": [], "note": "not verified this run - site access blocked" },
+    "George T. Stagg": { "products": [], "note": "not verified this run - site access blocked" },
+    "Van Winkle / Pappy Van Winkle": { "products": [], "note": "not verified this run - site access blocked" },
+    "Macallan": { "products": [], "note": "not verified this run - site access blocked" },
+    "Clynelish": { "products": [], "note": "not verified this run - site access blocked" },
+    "Daftmill": { "products": [], "note": "not verified this run - site access blocked" }
+  },
+  "site_promotions": { "checked": false, "note": "not verified this run - site access blocked" }
+}
