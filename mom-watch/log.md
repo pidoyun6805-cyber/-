@@ -1,5 +1,15 @@
 # Master of Malt Watch Log
 
+## 2026-08-05 05:52 UTC — 두 번째 실행 (실패: 사이트 자체 봇 차단, HTTP 429)
+
+- **확인 시도한 브랜드**: Springbank (Local Barley 포함), George T. Stagg, Van Winkle/Pappy Van Winkle, Macallan, Clynelish, Daftmill (전체 6개)
+- **결과**: 이전 실행(11분 전, 05:41 UTC)과 달리 이번에는 프록시 CONNECT 단계 403 차단은 사라졌습니다 (`$HTTPS_PROXY/__agentproxy/status`의 `recentRelayFailures`도 비어 있음). 하지만 masterofmalt.com 자체가 모든 요청(홈페이지, 검색 페이지, 개별 제품 페이지)에 HTTP 429와 함께 "Vercel Security Checkpoint"라는 JS 기반 봇 탐지 챌린지 페이지를 반환했습니다. WebFetch, 브라우저 User-Agent를 지정한 curl 모두 동일하게 차단됨.
+- **원인**: 프록시 정책 차단이 아니라 사이트 자체의 봇 차단(Vercel Security Checkpoint)입니다. 이 챌린지를 우회하는 시도(헤더/IP 스푸핑, JS 챌린지 자동 풀이 등)는 탐지 회피(detection evasion)에 해당하여 시도하지 않았습니다.
+- **WebSearch로 얻은 부가 정보**: 구글 검색 인덱스를 통해 Springbank Local Barley의 여러 빈티지/배치(예: 2025 Release 10 Year Old, 8 Year Old 2016 등) 제품명과 URL은 확인했으나, 가격이나 재고 상태(Add to basket / Notify me)는 검색 스니펫에 없어 확인 불가.
+- **state.json**: 신뢰할 수 없는 재고/가격 데이터로 다음 실행에서 허위 비교가 발생하지 않도록, 제품 데이터는 비워두고 이번 실행이 실패했다는 사실(및 실패 원인이 프록시 정책 → 사이트 자체 봇 차단으로 바뀌었다는 점)만 기록했습니다.
+- **알림 발송 여부**: 보내지 않음 — 직전 실행(11분 전)에서 이미 "사이트 접속 불가" 사실을 알렸고, 이번 실행도 동일한 근본 문제(접속 불가)의 연장선이라 중복 알림은 생략했습니다. 다만 실패 원인이 바뀐 점은 로그에 기록해 둡니다.
+- **다음 실행을 위한 참고**: 사이트의 봇 탐지(Vercel Security Checkpoint)가 계속되는 한 자동화된 모니터링은 구조적으로 불가능합니다. 정상적인 브라우저 세션/쿠키를 통한 접근이 허용되는 방법이 마련되지 않으면 계속 실패할 것으로 예상됩니다.
+
 ## 2026-08-05 05:41 UTC — 첫 실행 (실패: 사이트 접속 차단)
 
 - **확인 시도한 브랜드**: Springbank (Local Barley 포함), George T. Stagg, Van Winkle/Pappy Van Winkle, Macallan, Clynelish, Daftmill (전체 6개)

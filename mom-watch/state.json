@@ -1,17 +1,17 @@
 {
   "last_successful_check": null,
   "last_attempt": {
-    "timestamp": "2026-08-05T05:41:00Z",
+    "timestamp": "2026-08-05T05:52:13Z",
     "status": "failed",
-    "reason": "masterofmalt.com blocked at network/proxy policy level (HTTP 403 on CONNECT tunnel for every request, incl. plain curl). Confirmed via proxy status endpoint: recentRelayFailures show connect_rejected / \"gateway answered 403 to CONNECT (policy denial or upstream failure)\" for www.masterofmalt.com:443 across search pages, brand pages, homepage, and individual product pages. www.thewhiskyexchange.com was blocked identically, suggesting a policy-level block on alcohol-retail domains rather than a Master of Malt-specific bot block. WebSearch (Google index) could surface some product name/URL listings but never price or live stock status, so no reliable Add-to-basket/Notify-me data could be captured this run."
+    "reason": "masterofmalt.com is now reachable past the outbound proxy (no more 403 CONNECT policy denial), but the site itself returns HTTP 429 'Vercel Security Checkpoint' (a JS bot-detection challenge page) to every automated request - WebFetch, and plain curl with a browser User-Agent, on the homepage, search pages, and individual product pages alike. This is the site's own bot protection, not a proxy policy block. Deliberately working around a bot-detection checkpoint (solving JS challenges, spoofing headers/IPs to evade it) was not attempted, consistent with avoiding detection-evasion techniques. WebSearch (Google index) again surfaced some product name/URL listings (e.g. Springbank Local Barley releases across multiple vintages) but never price or live stock status, so no reliable Add-to-basket/Notify-me comparison could be made this run."
   },
   "brands": {
-    "Springbank": { "products": [], "note": "not verified this run - site access blocked" },
-    "George T. Stagg": { "products": [], "note": "not verified this run - site access blocked" },
-    "Van Winkle / Pappy Van Winkle": { "products": [], "note": "not verified this run - site access blocked" },
-    "Macallan": { "products": [], "note": "not verified this run - site access blocked" },
-    "Clynelish": { "products": [], "note": "not verified this run - site access blocked" },
-    "Daftmill": { "products": [], "note": "not verified this run - site access blocked" }
+    "Springbank": { "products": [], "note": "not verified this run - site returns bot-check (HTTP 429) to automated requests" },
+    "George T. Stagg": { "products": [], "note": "not verified this run - site returns bot-check (HTTP 429) to automated requests" },
+    "Van Winkle / Pappy Van Winkle": { "products": [], "note": "not verified this run - site returns bot-check (HTTP 429) to automated requests" },
+    "Macallan": { "products": [], "note": "not verified this run - site returns bot-check (HTTP 429) to automated requests" },
+    "Clynelish": { "products": [], "note": "not verified this run - site returns bot-check (HTTP 429) to automated requests" },
+    "Daftmill": { "products": [], "note": "not verified this run - site returns bot-check (HTTP 429) to automated requests" }
   },
   "site_promotions": { "checked": false, "note": "not verified this run - site access blocked" }
 }
