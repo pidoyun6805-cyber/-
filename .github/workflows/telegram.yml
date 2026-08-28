@@ -1,0 +1,57 @@
+name: 브리핑 텔레그램 전송
+
+on:
+  push:
+    paths:
+      - 'news/**.md'
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 가장 최근 브리핑 찾기
+        id: pick
+        run: |
+          FILE=$(ls -1 news/*.md 2>/dev/null | sort | tail -1)
+          if [ -z "$FILE" ]; then
+            echo "news/ 에 .md 파일이 없습니다."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "보낼 파일: $FILE ($(wc -c < "$FILE") bytes)"
+            echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 텔레그램 전송
+        if: steps.pick.outputs.skip != '1'
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: "7697652808"
+          FILE: ${{ steps.pick.outputs.file }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::TELEGRAM_TOKEN 시크릿이 등록되지 않았습니다."
+            exit 1
+          fi
+          # 텔레그램 한 통 제한이 4096자라 줄 단위로 3500바이트씩 자른다
+          split -C 3500 "$FILE" /tmp/part_
+          total=$(ls -1 /tmp/part_* | wc -l)
+          i=0
+          fail=0
+          for f in /tmp/part_*; do
+            i=$((i+1))
+            resp=$(curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+              -d chat_id="$CHAT_ID" \
+              --data-urlencode "text@$f")
+            if echo "$resp" | grep -q '"ok":true'; then
+              echo "  $i/$total 전송 성공"
+            else
+              fail=$((fail+1))
+              echo "  $i/$total 실패: $(echo "$resp" | head -c 300)"
+            fi
+            sleep 1
+          done
+          echo "완료: $((total-fail))/$total 전송"
+          if [ "$fail" -gt 0 ]; then exit 1; fi
