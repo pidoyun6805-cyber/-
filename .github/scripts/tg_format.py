@@ -51,6 +51,22 @@ def convert(text):
     return out
 
 
+def space_out(lines):
+    """제목 앞과 목록 항목 뒤에 빈 줄을 넣어 폰에서 읽기 쉽게 한다."""
+    out = []
+    for i, line in enumerate(lines):
+        s = line.strip()
+        is_heading = s.startswith("<b>") and s.endswith("</b>")
+        is_item = bool(re.match(r"^\d+\.\s", s)) or s.startswith("• ")
+        if is_heading and out and out[-1].strip():
+            out.append("")
+        out.append(line)
+        nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
+        if is_item and nxt:
+            out.append("")
+    return out
+
+
 def chunk(lines):
     parts, buf = [], ""
     for line in lines:
@@ -67,7 +83,7 @@ def chunk(lines):
 def main():
     with open(sys.argv[1], encoding="utf-8") as fh:
         text = fh.read()
-    parts = chunk(convert(strip_front_matter(text)))
+    parts = chunk(space_out(convert(strip_front_matter(text))))
     os.makedirs("parts", exist_ok=True)
     for i, part in enumerate(parts, 1):
         with open("parts/%02d.txt" % i, "w", encoding="utf-8") as fh:
