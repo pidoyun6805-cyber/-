@@ -35,23 +35,38 @@ jobs:
             echo "::error::TELEGRAM_TOKEN 시크릿이 등록되지 않았습니다."
             exit 1
           fi
-          # 텔레그램 한 통 제한이 4096자라 줄 단위로 3500바이트씩 자른다
-          split -C 3500 "$FILE" /tmp/part_
-          total=$(ls -1 /tmp/part_* | wc -l)
+
+          n=$(python3 .github/scripts/tg_format.py "$FILE")
+          echo "메시지 $n 통으로 분할"
+
           i=0
           fail=0
-          for f in /tmp/part_*; do
+          for f in parts/*.txt; do
             i=$((i+1))
             resp=$(curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
               -d chat_id="$CHAT_ID" \
+              -d parse_mode=HTML \
+              -d disable_web_page_preview=true \
               --data-urlencode "text@$f")
+
             if echo "$resp" | grep -q '"ok":true'; then
-              echo "  $i/$total 전송 성공"
+              echo "  $i/$n 전송 성공 (HTML)"
             else
-              fail=$((fail+1))
-              echo "  $i/$total 실패: $(echo "$resp" | head -c 300)"
+              echo "  $i/$n HTML 거부됨, 평문으로 재시도: $(echo "$resp" | head -c 200)"
+              sed -e 's/<[^>]*>//g' "$f" > "$f.plain"
+              resp2=$(curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+                -d chat_id="$CHAT_ID" \
+                -d disable_web_page_preview=true \
+                --data-urlencode "text@$f.plain")
+              if echo "$resp2" | grep -q '"ok":true'; then
+                echo "  $i/$n 전송 성공 (평문 대체)"
+              else
+                fail=$((fail+1))
+                echo "  $i/$n 실패: $(echo "$resp2" | head -c 200)"
+              fi
             fi
             sleep 1
           done
-          echo "완료: $((total-fail))/$total 전송"
+
+          echo "완료: $((n-fail))/$n 전송"
           if [ "$fail" -gt 0 ]; then exit 1; fi
