@@ -24,6 +24,7 @@ def strip_front_matter(text):
 
 def convert(text):
     out = []
+    header = None
     for raw in text.split("\n"):
         line = raw.rstrip()
 
@@ -31,13 +32,25 @@ def convert(text):
         if re.fullmatch(r"\s*\|[\s:|-]+\|\s*", line):
             continue
 
-        # 표 행은 "• 셀 — 셀" 형태로 편다
+        # 표는 항목별 블록으로 편다 (폰에서 표는 읽을 수 없다)
         if line.startswith("|") and line.endswith("|"):
             cells = [c.strip() for c in line.strip("|").split("|")]
             cells = [c for c in cells if c]
             if not cells:
                 continue
-            line = "• " + "  —  ".join(cells)
+            if header is None:
+                header = cells          # 첫 행은 열 이름으로 기억해둔다
+                continue
+            block = ["▪ " + cells[0]]
+            for idx, cell in enumerate(cells[1:], start=1):
+                label = header[idx] if idx < len(header) else ""
+                block.append("   " + (label + " · " if label else "") + cell)
+            for b in block:
+                out.append(html.escape(b, quote=False))
+            out.append("")
+            continue
+        else:
+            header = None
 
         esc = html.escape(line, quote=False)
         esc = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r'<a href="\2">\1</a>', esc)
