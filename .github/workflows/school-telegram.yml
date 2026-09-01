@@ -28,7 +28,7 @@ jobs:
         if: steps.pick.outputs.skip != '1'
         env:
           TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          CHAT_ID: "7697652808"
+          CHAT_ID: "-5583530960"  # 텔레그램 그룹 "학교 중요 알림" (뉴스 개인방과 분리)
           FILE: ${{ steps.pick.outputs.file }}
         run: |
           if [ -z "$TOKEN" ]; then
