@@ -1,0 +1,63 @@
+name: 학교 강의 알림 텔레그램 전송
+
+on:
+  push:
+    paths:
+      - 'school/**.md'
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 가장 최근 학교 알림 찾기
+        id: pick
+        run: |
+          FILE=$(ls -1 school/*.md 2>/dev/null | sort | tail -1)
+          if [ -z "$FILE" ]; then
+            echo "school/ 에 .md 파일이 없습니다."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "보낼 파일: $FILE ($(wc -c < "$FILE") bytes)"
+            echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 텔레그램 전송
+        if: steps.pick.outputs.skip != '1'
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: "7697652808"
+          FILE: ${{ steps.pick.outputs.file }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::TELEGRAM_TOKEN 시크릿이 등록되지 않았습니다."
+            exit 1
+          fi
+          n=$(python3 .github/scripts/tg_split.py "$FILE")
+          echo "메시지 $n 통으로 분할"
+          i=0; fail=0
+          for f in parts/*.txt; do
+            i=$((i+1))
+            resp=$(curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+              -d chat_id="$CHAT_ID" -d parse_mode=HTML -d disable_web_page_preview=true \
+              --data-urlencode "text@$f")
+            if echo "$resp" | grep -q '"ok":true'; then
+              echo "  $i/$n 전송 성공 (HTML)"
+            else
+              echo "  $i/$n HTML 거부, 평문 재시도: $(echo "$resp" | head -c 200)"
+              sed -e 's/<[^>]*>//g' "$f" > "$f.plain"
+              resp2=$(curl -sS -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+                -d chat_id="$CHAT_ID" -d disable_web_page_preview=true \
+                --data-urlencode "text@$f.plain")
+              if echo "$resp2" | grep -q '"ok":true'; then
+                echo "  $i/$n 평문 성공"
+              else
+                fail=$((fail+1)); echo "  $i/$n 실패: $(echo "$resp2" | head -c 200)"
+              fi
+            fi
+            sleep 1
+          done
+          echo "완료: $((n-fail))/$n 전송"
+          if [ "$fail" -gt 0 ]; then exit 1; fi
