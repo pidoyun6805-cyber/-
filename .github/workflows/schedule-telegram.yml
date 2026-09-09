@@ -37,7 +37,7 @@ jobs:
         if: steps.pick.outputs.skip != '1' && inputs.dry_run != true
         env:
           TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          CHAT_ID: "7697652808"  # 개인 채팅. 일정 전용 그룹을 만들면 여기만 바꾸면 된다.
+          CHAT_ID: "-5431684710"  # 텔레그램 그룹 "일정알림봇". 뉴스 개인방과 분리
         run: |
           if [ -z "$TOKEN" ]; then
             echo "::error::TELEGRAM_TOKEN 시크릿이 등록되지 않았습니다."
