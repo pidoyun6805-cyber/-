@@ -1,6 +1,10 @@
 name: 일정 알림 텔레그램 전송
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'schedule/**'   # 일정을 적어 푸시하면 그 자리에서 한 번 검사한다
   schedule:
     - cron: '0 21 * * *'    # 06:00 KST (UTC+9). 실제 발화는 대기열 지연으로 1~2시간 밀린다
   workflow_dispatch:
