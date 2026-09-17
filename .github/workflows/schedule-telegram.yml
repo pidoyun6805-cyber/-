@@ -7,6 +7,7 @@ on:
       - 'schedule/**'   # 일정을 적어 푸시하면 그 자리에서 한 번 검사한다
   schedule:
     - cron: '0 21 * * *'    # 06:00 KST (UTC+9). 실제 발화는 대기열 지연으로 1~2시간 밀린다
+    - cron: '0 10 * * *'    # 19:00 KST 저녁판 — 내일 일정 + 오늘 남은 시간 일정. 지연 감안하면 20~21시 도착
   workflow_dispatch:
     inputs:
       dry_run:

@@ -8,6 +8,8 @@
 
 알림 시점은 D-7, D-1, 당일. 보낼 게 있으면 메시지를 stdout 으로 내고 0,
 없으면 아무것도 내지 않고 9 로 끝낸다.
+
+KST 15시 이후에 돌면 저녁판: 내일 일정 전부 + 오늘 아직 안 지난 시간 일정만 보낸다.
 """
 import html
 import re
@@ -18,6 +20,7 @@ from pathlib import Path
 KST = timezone(timedelta(hours=9))  # 한국은 서머타임이 없어 고정 오프셋으로 충분하다
 SOURCE = Path("schedule/일정.md")
 OFFSETS = {0: "오늘", 1: "내일", 7: "일주일 뒤"}
+EVENING_FROM = 15  # 이 시각(KST) 이후 실행이면 저녁판
 LINE = re.compile(r"^(\d{4}-\d{2}-\d{2})\s+(?:(\d{1,2}:\d{2})\s+)?(.+?)\s*$")
 
 
@@ -49,7 +52,9 @@ def main():
         print(f"{SOURCE} 가 없습니다.", file=sys.stderr)
         return 9
 
-    today = datetime.now(KST).date()
+    now = datetime.now(KST)
+    today = now.date()
+    evening = now.hour >= EVENING_FROM
     events, bad = parse(SOURCE)
     for no, line in bad:
         print(f"{SOURCE}:{no} 형식을 못 읽었습니다: {line}", file=sys.stderr)
@@ -57,17 +62,22 @@ def main():
     due = {}
     for date, time, what in events:
         delta = (date - today).days
-        if delta in OFFSETS:
+        if evening:
+            # 저녁판: 내일 전부, 오늘은 아직 안 지난 시간 일정만
+            if delta == 1 or (delta == 0 and time and time > now.strftime("%H:%M")):
+                due.setdefault(delta, []).append((date, time, what))
+        elif delta in OFFSETS:
             due.setdefault(delta, []).append((date, time, what))
 
     if not due:
         print(f"오늘({today}) 보낼 일정이 없습니다. 등록된 일정 {len(events)}건.", file=sys.stderr)
         return 9
 
-    out = [f"🗓 <b>일정 알림</b> · {today.month}월 {today.day}일"]
+    labels = {0: "오늘 남은 일정", 1: "내일"} if evening else OFFSETS
+    out = [f"🗓 <b>일정 알림</b> · {today.month}월 {today.day}일" + (" 저녁" if evening else "")]
     for delta in sorted(due):
         out.append("")
-        out.append(f"<b>{OFFSETS[delta]}</b>")
+        out.append(f"<b>{labels[delta]}</b>")
         for date, time, what in sorted(due[delta], key=lambda e: (e[0], e[1] or "")):
             when = f"{date.month}/{date.day}"
             if time:
