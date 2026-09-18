@@ -15,7 +15,7 @@ jobs:
       - name: 가장 최근 위스키 브리핑 찾기
         id: pick
         run: |
-          FILE=$(ls -1 whisky/*.md 2>/dev/null | sort | tail -1)
+          FILE=$(ls -1 whisky/[0-9]*.md 2>/dev/null | sort | tail -1)  # README.md 제외, 날짜 파일만
           if [ -z "$FILE" ]; then
             echo "whisky/ 에 .md 파일이 없습니다."
             echo "skip=1" >> "$GITHUB_OUTPUT"
